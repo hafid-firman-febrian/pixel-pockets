@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbfbf8;
+  --foreground: #1a1a1a;
+  /* Font variabel ini akan diisi oleh Next.js dari layout.tsx */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* HUBUNGKAN DI SINI: */
+  /* Kita memetakan variabel dari Next Font ke utilitas Tailwind */
+  --font-mono: var(--font-inconsolata);
+  --font-sans: var(--font-inconsolata);
+}
+
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    /* Gunakan font-mono (Inconsolata) sebagai default */
+    font-family: var(--font-inconsolata), "Inconsolata", monospace;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1rem;
+    min-height: 100vh;
+  }
+}
