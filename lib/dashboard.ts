@@ -136,24 +136,24 @@ export function formatCurrency(amount: number) {
 export function getFilterLabel(filter: DashboardFilter) {
   switch (filter) {
     case "month":
-      return "bulan ini";
+      return "this month";
     case "week":
-      return "minggu ini";
+      return "this week";
     default:
-      return "semua data";
+      return "all data";
   }
 }
 
 export function getTransactionListFilterLabel(filter: TransactionListFilter) {
   switch (filter) {
     case "month":
-      return "bulan ini";
+      return "this month";
     case "week":
-      return "minggu ini";
+      return "this week";
     case "year":
-      return "tahun ini";
+      return "this year";
     default:
-      return "semua data";
+      return "all adata";
   }
 }
 

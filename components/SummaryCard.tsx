@@ -46,7 +46,7 @@ export default function SummaryCard({
             /summary
           </p>
           <h2 className="mt-2 text-2xl font-bold text-slate-900">
-            Snapshot untuk {filterLabel}
+          Snapshot for {filterLabel}
           </h2>
         </div>
 

@@ -5,6 +5,7 @@ import { useState } from "react";
 import SummaryCard from "@/components/SummaryCard";
 import TransactionCharts from "@/components/home/TransactionCharts";
 import TransactionHistory from "@/components/home/TransactionHistory";
+import { useTransactions } from "@/components/providers/TransactionProvider";
 import {
   buildCategoryData,
   buildSummary,
@@ -13,11 +14,6 @@ import {
   getFilterLabel,
   type DashboardFilter,
 } from "@/lib/dashboard";
-import type { TransactionRecord } from "@/lib/transactions";
-
-interface HomeDashboardProps {
-  transactions: TransactionRecord[];
-}
 
 const FILTER_OPTIONS: { label: string; value: DashboardFilter }[] = [
   { label: "All", value: "all" },
@@ -47,7 +43,8 @@ function FilterButton({ isActive, label, onClick }: FilterButtonProps) {
   );
 }
 
-export default function HomeDashboard({ transactions }: HomeDashboardProps) {
+export default function HomeDashboard() {
+  const { transactions } = useTransactions();
   const [activeFilter, setActiveFilter] = useState<DashboardFilter>("all");
 
   const filteredTransactions = filterTransactions(transactions, activeFilter);

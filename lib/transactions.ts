@@ -9,11 +9,11 @@ export const TRANSACTION_CATEGORIES = [
   "Daily Needs",
   "Entertaiment",
   "Housing",
-  "Custom",
+
 ] as const;
 
 export type TransactionType = "Income" | "Expense";
-export type TransactionCategory = (typeof TRANSACTION_CATEGORIES)[number];
+export type TransactionCategory = string;
 
 export interface TransactionRecord {
   id: string;

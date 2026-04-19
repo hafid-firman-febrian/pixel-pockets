@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Inconsolata } from "next/font/google";
+
+import AppProviders from "@/components/providers/AppProviders";
+
 import "./globals.css";
 
 const inconsolata = Inconsolata({
@@ -20,7 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inconsolata.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-mono">{children}</body>
+      <body className="min-h-full flex flex-col font-mono">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }
