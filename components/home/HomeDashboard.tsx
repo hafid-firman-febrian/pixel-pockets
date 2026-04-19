@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import SummaryCard from "@/components/SummaryCard";
 import TransactionCharts from "@/components/home/TransactionCharts";
+import TransactionHistory from "@/components/home/TransactionHistory";
 import {
   buildCategoryData,
   buildSummary,
@@ -102,6 +103,8 @@ export default function HomeDashboard({ transactions }: HomeDashboardProps) {
         categoryData={categoryData}
         filterLabel={getFilterLabel(activeFilter)}
       />
+
+      <TransactionHistory transactions={transactions} />
     </section>
   );
 }

@@ -1,6 +1,7 @@
 import type { TransactionCategory, TransactionRecord } from "@/lib/transactions";
 
 export type DashboardFilter = "all" | "month" | "week";
+export type TransactionListFilter = "all" | "month" | "week" | "year";
 
 export interface SummaryTotals {
   income: number;
@@ -18,6 +19,22 @@ export interface CategoryDatum {
   amount: number;
 }
 
+export interface TransactionGroup {
+  date: string;
+  label: string;
+  transactions: TransactionRecord[];
+}
+
+export interface TransactionPeriodState {
+  filter: TransactionListFilter;
+  offset: number;
+}
+
+export interface TransactionListPeriodResult {
+  transactions: TransactionRecord[];
+  label: string;
+}
+
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
   currency: "IDR",
@@ -29,7 +46,29 @@ const shortDateFormatter = new Intl.DateTimeFormat("id-ID", {
   month: "short",
 });
 
-function parseDateOnly(value: string) {
+const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const monthFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  year: "numeric",
+});
+
+const yearFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+});
+
+const weekRangeFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
+export function parseDateOnly(value: string) {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day, 12, 0, 0, 0);
 }
@@ -52,6 +91,44 @@ function endOfWeek(date: Date) {
   return end;
 }
 
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function addMonths(date: Date, months: number) {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + months);
+  return next;
+}
+
+function addYears(date: Date, years: number) {
+  const next = new Date(date);
+  next.setFullYear(next.getFullYear() + years);
+  return next;
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
+}
+
+function endOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+}
+
+function startOfYear(date: Date) {
+  return new Date(date.getFullYear(), 0, 1, 0, 0, 0, 0);
+}
+
+function endOfYear(date: Date) {
+  return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
+}
+
+function formatWeekRange(start: Date, end: Date) {
+  return `${weekRangeFormatter.format(start)} - ${weekRangeFormatter.format(end)}`;
+}
+
 export function formatCurrency(amount: number) {
   return currencyFormatter.format(amount);
 }
@@ -65,6 +142,45 @@ export function getFilterLabel(filter: DashboardFilter) {
     default:
       return "semua data";
   }
+}
+
+export function getTransactionListFilterLabel(filter: TransactionListFilter) {
+  switch (filter) {
+    case "month":
+      return "bulan ini";
+    case "week":
+      return "minggu ini";
+    case "year":
+      return "tahun ini";
+    default:
+      return "semua data";
+  }
+}
+
+export function getTransactionPeriodLabel(
+  filter: TransactionListFilter,
+  offset: number,
+  now: Date = new Date(),
+) {
+  if (filter === "all") {
+    return "semua data";
+  }
+
+  const reference = new Date(now);
+  reference.setHours(12, 0, 0, 0);
+
+  if (filter === "week") {
+    const shifted = addDays(reference, offset * 7);
+    const periodStart = startOfWeek(shifted);
+    const periodEnd = endOfWeek(shifted);
+    return formatWeekRange(periodStart, periodEnd);
+  }
+
+  if (filter === "month") {
+    return monthFormatter.format(addMonths(reference, offset));
+  }
+
+  return yearFormatter.format(addYears(reference, offset));
 }
 
 export function filterTransactions(
@@ -96,6 +212,58 @@ export function filterTransactions(
   });
 }
 
+export function filterTransactionsForList(
+  transactions: TransactionRecord[],
+  filter: TransactionListFilter,
+  offset: number = 0,
+  now: Date = new Date(),
+) {
+  if (filter === "all") {
+    return [...transactions];
+  }
+
+  const reference = new Date(now);
+  reference.setHours(12, 0, 0, 0);
+
+  let periodStart: Date;
+  let periodEnd: Date;
+
+  if (filter === "week") {
+    const shifted = addDays(reference, offset * 7);
+    periodStart = startOfWeek(shifted);
+    periodEnd = endOfWeek(shifted);
+  } else if (filter === "month") {
+    const shifted = addMonths(reference, offset);
+    periodStart = startOfMonth(shifted);
+    periodEnd = endOfMonth(shifted);
+  } else {
+    const shifted = addYears(reference, offset);
+    periodStart = startOfYear(shifted);
+    periodEnd = endOfYear(shifted);
+  }
+
+  return transactions.filter((transaction) => {
+    const transactionDate = parseDateOnly(transaction.date);
+    return transactionDate >= periodStart && transactionDate <= periodEnd;
+  });
+}
+
+export function getTransactionListPeriodResult(
+  transactions: TransactionRecord[],
+  state: TransactionPeriodState,
+  now: Date = new Date(),
+): TransactionListPeriodResult {
+  return {
+    transactions: filterTransactionsForList(
+      transactions,
+      state.filter,
+      state.offset,
+      now,
+    ),
+    label: getTransactionPeriodLabel(state.filter, state.offset, now),
+  };
+}
+
 export function buildSummary(transactions: TransactionRecord[]): SummaryTotals {
   return transactions.reduce(
     (totals, transaction) => {
@@ -109,6 +277,10 @@ export function buildSummary(transactions: TransactionRecord[]): SummaryTotals {
     },
     { income: 0, expense: 0 },
   );
+}
+
+export function buildTransactionTotals(transactions: TransactionRecord[]) {
+  return buildSummary(transactions);
 }
 
 export function buildTrendData(transactions: TransactionRecord[]): TrendDatum[] {
@@ -157,4 +329,39 @@ export function buildCategoryData(
       category,
       amount,
     }));
+}
+
+export function formatTransactionGroupDate(date: string) {
+  return fullDateFormatter.format(parseDateOnly(date));
+}
+
+export function groupTransactionsByDay(
+  transactions: TransactionRecord[],
+): TransactionGroup[] {
+  const groupedByDate = new Map<string, TransactionRecord[]>();
+
+  const sortedTransactions = [...transactions].sort((left, right) => {
+    const rightDate = parseDateOnly(right.date).getTime();
+    const leftDate = parseDateOnly(left.date).getTime();
+
+    if (rightDate !== leftDate) {
+      return rightDate - leftDate;
+    }
+
+    return (
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    );
+  });
+
+  for (const transaction of sortedTransactions) {
+    const current = groupedByDate.get(transaction.date) ?? [];
+    current.push(transaction);
+    groupedByDate.set(transaction.date, current);
+  }
+
+  return Array.from(groupedByDate.entries()).map(([date, records]) => ({
+    date,
+    label: formatTransactionGroupDate(date),
+    transactions: records,
+  }));
 }
