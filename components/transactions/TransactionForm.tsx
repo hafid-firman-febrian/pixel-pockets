@@ -24,6 +24,7 @@ interface TransactionFormErrors {
   date?: string;
   amount?: string;
   category?: string;
+  description?: string;
 }
 
 interface FormState {
@@ -115,6 +116,9 @@ export default function TransactionForm({
       !formState.customCategory.trim()
     ) {
       nextErrors.category = "Fill in the Other Category field when selecting Other.";
+    }
+    if (!formState.description) {
+      nextErrors.description = "The description field must be filled in.";
     }
 
     setErrors(nextErrors);
@@ -331,12 +335,10 @@ export default function TransactionForm({
           rows={4}
           value={formState.description}
           onChange={(event) => updateField("description", event.target.value)}
-          placeholder="Tulis catatan singkat transaksi"
+          placeholder="Write a brief description of the transaction"
           className="w-full border border-black bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-colors focus:bg-yellow-50"
         />
-        <p className="text-sm text-slate-500">
-        The description is optional; you can leave it blank.
-        </p>
+        <p className="text-sm text-red-700">{errors.description}</p>
       </label>
 
       <div className="flex flex-col-reverse gap-3 border-t border-dashed border-slate-300 pt-4 sm:flex-row sm:justify-end">
