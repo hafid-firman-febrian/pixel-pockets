@@ -11,7 +11,7 @@ import {
   type TransactionListFilter,
 } from "@/lib/dashboard";
 import type { TransactionRecord } from "@/lib/transactions";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 interface TransactionHistoryProps {
   transactions: TransactionRecord[];
@@ -84,6 +84,82 @@ function TypeBadge({ type }: { type: TransactionRecord["type"] }) {
     <span className={`inline-flex border border-black px-2 py-1 text-xs font-bold uppercase ${className}`}>
       {type}
     </span>
+  );
+}
+
+function TransactionField({
+  label,
+  value,
+  align = "left",
+}: {
+  label: string;
+  value: ReactNode;
+  align?: "left" | "right";
+}) {
+  const alignmentClassName = align === "right" ? "text-right" : "text-left";
+
+  return (
+    <div className={`min-w-0 space-y-1 ${alignmentClassName}`}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500">
+        {label}
+      </p>
+      <div className="min-w-0 break-words text-sm text-slate-700">{value}</div>
+    </div>
+  );
+}
+
+function TransactionCard({
+  transaction,
+  index,
+}: {
+  transaction: TransactionRecord;
+  index: number;
+}) {
+  return (
+    <article
+      className={`border border-black p-4 ${
+        index % 2 === 0 ? "bg-white" : "bg-slate-50"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3 border-b border-dashed border-slate-300 pb-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500">
+            Amount
+          </p>
+          <p className="mt-1 break-words text-2xl font-bold text-slate-900">
+            {formatCurrency(transaction.amount)}
+          </p>
+        </div>
+        <TypeBadge type={transaction.type} />
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <TransactionField
+          label="Date"
+          value={
+            <span className="font-medium text-slate-800">
+              {formatRowDate(transaction.date)}
+            </span>
+          }
+        />
+        <TransactionField
+          label="Category"
+          value={
+            <span className="font-medium text-slate-800">
+              {transaction.category}
+            </span>
+          }
+        />
+        <TransactionField
+          label="Type"
+          value={<TypeBadge type={transaction.type} />}
+        />
+        <TransactionField
+          label="Description"
+          value={transaction.description || "-"}
+        />
+      </div>
+    </article>
   );
 }
 
@@ -186,7 +262,17 @@ export default function TransactionHistory({
                 </div>
               </div>
 
-              <div className="overflow-x-auto border border-black">
+              <div className="space-y-3 md:hidden">
+                {group.transactions.map((transaction, index) => (
+                  <TransactionCard
+                    key={transaction.id}
+                    transaction={transaction}
+                    index={index}
+                  />
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto border border-black md:block">
                 <table className="min-w-full border-collapse text-left">
                   <thead className="bg-slate-900 text-xs uppercase tracking-[0.25em] text-slate-100">
                     <tr>
