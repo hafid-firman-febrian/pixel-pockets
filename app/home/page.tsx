@@ -1,11 +1,12 @@
 import Navbar from "@/components/Navbar";
-import SummaryCard from "@/components/SummaryCard";
+import HomeDashboard from "@/components/home/HomeDashboard";
+import { dummyTransactions } from "@/lib/transactions";
 
 export default function Home() {
   return (
     <>
       <Navbar />
-      <SummaryCard />
+      <HomeDashboard transactions={dummyTransactions} />
     </>
   );
 }

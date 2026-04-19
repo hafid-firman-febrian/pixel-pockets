@@ -1,6 +1,4 @@
-"use client"; // Tambahkan ini jika Navbar ada di dalam App Router dan punya interaktivitas
-
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import Link from "next/link";
 
 interface NavlinkProps {

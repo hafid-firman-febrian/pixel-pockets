@@ -1,94 +1,74 @@
-"use client"; // WAJIB: Karena menggunakan useState
+import { formatCurrency } from "@/lib/dashboard";
 
-import { useState, ReactNode } from "react";
-
-// 1. Definisi Interface untuk Props TabSummary
-interface TabSummaryProps {
-  children: ReactNode;
-  isActive: boolean;
-  onClick: () => void;
-  activeColor: string;
+interface SummaryCardProps {
+  income: number;
+  expense: number;
+  filterLabel: string;
+  transactionCount: number;
 }
 
-function TabSummary({
-  children,
-  isActive,
-  onClick,
-  activeColor,
-}: TabSummaryProps) {
+interface SummaryItemProps {
+  title: string;
+  value: number;
+  accentClassName: string;
+  surfaceClassName: string;
+}
+
+function SummaryItem({
+  title,
+  value,
+  accentClassName,
+  surfaceClassName,
+}: SummaryItemProps) {
   return (
-    <button
-      onClick={onClick}
-      type="button" // Standar aksesibilitas untuk tombol dalam form/app
-      className={`w-full p-2 border border-black transition-colors duration-200 font-mono ${
-        isActive ? activeColor : "bg-white hover:bg-gray-100 text-black"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-// 2. Definisi Interface untuk Props SummaryContent
-interface SummaryContentProps {
-  children: ReactNode;
-  bgColor: string;
-}
-
-function SummaryContent({ children, bgColor }: SummaryContentProps) {
-  return (
-    <div
-      className={`w-full p-4 mt-4 border border-black transition-colors duration-300 ${bgColor}`}
-    >
-      {children}
+    <div className={`border border-black p-4 ${surfaceClassName}`}>
+      <p className={`text-xs font-bold uppercase tracking-[0.3em] ${accentClassName}`}>
+        {title}
+      </p>
+      <p className="mt-3 text-3xl font-bold text-slate-900 md:text-4xl">
+        {formatCurrency(value)}
+      </p>
     </div>
   );
 }
 
-type TabType = "income" | "expense";
-
-export default function SummaryCard() {
-  const [activeTab, setActiveTab] = useState<TabType>("income");
-
+export default function SummaryCard({
+  income,
+  expense,
+  filterLabel,
+  transactionCount,
+}: SummaryCardProps) {
   return (
-    <div className="block p-2 border border-black bg-white">
-      <div className="flex gap-2">
-        <TabSummary
-          isActive={activeTab === "income"}
-          onClick={() => setActiveTab("income")}
-          activeColor="bg-green-500 text-white"
-        >
-          [ My Incomes ]
-        </TabSummary>
+    <section className="border border-black bg-white p-4">
+      <div className="flex flex-col gap-2 border-b border-dashed border-slate-300 pb-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-500">
+            /summary
+          </p>
+          <h2 className="mt-2 text-2xl font-bold text-slate-900">
+            Snapshot untuk {filterLabel}
+          </h2>
+        </div>
 
-        <TabSummary
-          isActive={activeTab === "expense"}
-          onClick={() => setActiveTab("expense")}
-          activeColor="bg-red-500 text-white"
-        >
-          [ My Expenses ]
-        </TabSummary>
+        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+          [ sourced from {transactionCount} transaction rows ]
+        </p>
       </div>
 
-      <SummaryContent
-        bgColor={activeTab === "income" ? "bg-green-100" : "bg-red-100"}
-      >
-        {activeTab === "income" ? (
-          <div className="text-green-900 font-medium animate-in fade-in duration-500">
-            <h4 className="text-sm uppercase tracking-tighter font-bold">
-              Total Pemasukan
-            </h4>
-            <p className="text-3xl font-mono">Rp 5.000.000</p>
-          </div>
-        ) : (
-          <div className="text-red-900 font-medium animate-in fade-in duration-500">
-            <h4 className="text-sm uppercase tracking-tighter font-bold">
-              Total Pengeluaran
-            </h4>
-            <p className="text-3xl font-mono">Rp 2.500.000</p>
-          </div>
-        )}
-      </SummaryContent>
-    </div>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <SummaryItem
+          title="Total Income"
+          value={income}
+          accentClassName="text-green-700"
+          surfaceClassName="bg-green-100"
+        />
+        <SummaryItem
+          title="Total Expense"
+          value={expense}
+          accentClassName="text-red-700"
+          surfaceClassName="bg-red-100"
+        />
+      </div>
+    </section>
   );
 }
