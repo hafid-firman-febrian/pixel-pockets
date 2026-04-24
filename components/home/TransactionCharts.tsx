@@ -189,33 +189,44 @@ export default function TransactionCharts({
               </div>
             ))}
 
-            {showAllCategories && hiddenCategoryCount > 0 ? (
-              <div className="space-y-2">
-                {categoryData
-                  .slice(DEFAULT_VISIBLE_CATEGORIES)
-                  .map((item, index) => (
-                    <div
-                      key={item.category}
-                      className="flex items-center justify-between gap-3 border border-black bg-slate-50 px-3 py-2 text-sm"
-                    >
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <span
-                          className="h-3 w-3 border border-black"
-                          style={{
-                            backgroundColor:
-                              PIE_COLORS[
-                                (index + DEFAULT_VISIBLE_CATEGORIES) %
-                                  PIE_COLORS.length
-                              ],
-                          }}
-                        />
-                        <span>{item.category}</span>
-                      </div>
-                      <span className="font-bold text-slate-900">
-                        {formatCurrency(item.amount)}
-                      </span>
-                    </div>
-                  ))}
+            {hiddenCategoryCount > 0 ? (
+              <div
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                  showAllCategories
+                    ? "grid-rows-[1fr] opacity-100"
+                    : "grid-rows-[0fr] opacity-0"
+                }`}
+                aria-hidden={!showAllCategories}
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <div className="space-y-2 pt-2">
+                    {categoryData
+                      .slice(DEFAULT_VISIBLE_CATEGORIES)
+                      .map((item, index) => (
+                        <div
+                          key={item.category}
+                          className="flex items-center justify-between gap-3 border border-black bg-slate-50 px-3 py-2 text-sm"
+                        >
+                          <div className="flex items-center gap-2 text-slate-700">
+                            <span
+                              className="h-3 w-3 border border-black"
+                              style={{
+                                backgroundColor:
+                                  PIE_COLORS[
+                                    (index + DEFAULT_VISIBLE_CATEGORIES) %
+                                      PIE_COLORS.length
+                                  ],
+                              }}
+                            />
+                            <span>{item.category}</span>
+                          </div>
+                          <span className="font-bold text-slate-900">
+                            {formatCurrency(item.amount)}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
             ) : null}
 
@@ -223,11 +234,10 @@ export default function TransactionCharts({
               <button
                 type="button"
                 onClick={() => setShowAllCategories((current) => !current)}
+                aria-expanded={showAllCategories}
                 className="mt-3 border border-black bg-white px-3 py-2 text-sm font-bold uppercase text-slate-900 transition-colors hover:bg-slate-100"
               >
-                {showAllCategories
-                  ? "Less"
-                  : `More ${hiddenCategoryCount}+`}
+                {showAllCategories ? "Less" : `More ${hiddenCategoryCount}+`}
               </button>
             ) : null}
           </div>
