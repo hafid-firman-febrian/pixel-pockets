@@ -7,9 +7,8 @@ export const TRANSACTION_CATEGORIES = [
   "Subscription",
   "E-commerce",
   "Daily Needs",
-  "Entertaiment",
+  "Entertainment",
   "Housing",
-
 ] as const;
 
 export type TransactionType = "Income" | "Expense";
@@ -179,7 +178,7 @@ const transactionSeeds: TransactionSeed[] = [
     createdHour: 18,
     type: "Expense",
     amount: 145000,
-    category: "Entertaiment",
+    category: "Entertainment",
     description: "Movie tickets and snacks",
   },
   {

@@ -58,7 +58,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       };
 
       setTransactions((current) => [nextTransaction, ...current]);
-      showToast("Transaksi berhasil ditambahkan.");
+      showToast("Transaction added successfully.");
       return nextTransaction;
     },
     [showToast],
@@ -84,7 +84,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       );
 
       if (updatedTransaction) {
-        showToast("Transaksi berhasil diperbarui.");
+        showToast("Transaction updated successfully.");
       }
 
       return updatedTransaction;
@@ -108,7 +108,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       );
 
       if (wasDeleted) {
-        showToast("Transaksi berhasil dihapus.");
+        showToast("Transaction deleted successfully.");
       }
 
       return wasDeleted;

@@ -42,7 +42,7 @@ function Toast({
     >
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-700">
-          /sukses
+          /success
         </p>
         <p className="mt-1 break-words font-medium">{message}</p>
       </div>
@@ -50,9 +50,9 @@ function Toast({
         type="button"
         onClick={onClose}
         className="border border-black bg-white px-2 py-1 text-xs font-bold uppercase text-slate-900 transition-colors hover:bg-slate-100"
-        aria-label="Tutup notifikasi"
+        aria-label="Close toast"
       >
-        Tutup
+        Close
       </button>
     </div>
   );

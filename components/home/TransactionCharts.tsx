@@ -87,9 +87,9 @@ export default function TransactionCharts({
         caption={`[ trend chart / ${filterLabel} ]`}
       >
         {!isMounted ? (
-          <EmptyChartState message="Chart tren sedang disiapkan di browser..." />
+          <EmptyChartState message="The trend chart is being prepared in the browser..." />
         ) : trendData.length === 0 ? (
-          <EmptyChartState message="Belum ada transaksi pada filter ini, jadi chart tren belum bisa ditampilkan." />
+          <EmptyChartState message="There are no transactions for this filter yet, so the trend chart cannot be displayed." />
         ) : (
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -118,13 +118,15 @@ export default function TransactionCharts({
                   dataKey="income"
                   name="Income"
                   fill="#22c55e"
-                  radius={[4, 4, 0, 0]}
+                  barSize="30"
+                  radius={[0, 0, 0, 0]}
                 />
                 <Bar
                   dataKey="expense"
                   name="Expense"
                   fill="#ef4444"
-                  radius={[4, 4, 0, 0]}
+                  barSize="30"
+                  radius={[0, 0, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -137,9 +139,9 @@ export default function TransactionCharts({
         caption={`[ category chart / ${filterLabel} ]`}
       >
         {!isMounted ? (
-          <EmptyChartState message="Chart kategori sedang disiapkan di browser..." />
+          <EmptyChartState message="The category chart is being prepared in the browser..." />
         ) : categoryData.length === 0 ? (
-          <EmptyChartState message="Belum ada transaksi pengeluaran pada filter ini, jadi breakdown kategori masih kosong." />
+          <EmptyChartState message="There are no expense transactions for this filter yet, so the category breakdown is still empty." />
         ) : (
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center">
             <div className="h-72">

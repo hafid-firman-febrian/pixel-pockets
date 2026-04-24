@@ -59,7 +59,7 @@ export default function Modal({
             onClick={onClose}
             className="border border-black bg-white px-3 py-2 text-xs font-bold uppercase text-slate-900 transition-colors hover:bg-slate-100"
           >
-            Tutup
+            Close
           </button>
         </div>
 

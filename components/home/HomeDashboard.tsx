@@ -45,7 +45,7 @@ function FilterButton({ isActive, label, onClick }: FilterButtonProps) {
 
 export default function HomeDashboard() {
   const { transactions } = useTransactions();
-  const [activeFilter, setActiveFilter] = useState<DashboardFilter>("all");
+  const [activeFilter, setActiveFilter] = useState<DashboardFilter>("week");
 
   const filteredTransactions = filterTransactions(transactions, activeFilter);
   const summary = buildSummary(filteredTransactions);
@@ -64,9 +64,9 @@ export default function HomeDashboard() {
               Track the money. Spot the pattern.
             </h1>
             {/* <p className="max-w-2xl text-sm leading-6 text-slate-700">
-              Dashboard ini memakai data dummy dengan struktur yang sudah selaras
-              dengan Google Spreadsheet final. Semua angka dan chart di bawah
-              membaca sumber data yang sama.
+              This dashboard uses dummy data that already matches the final
+              Google Spreadsheet structure. Every figure and chart below reads
+              from the same data source.
             </p> */}
           </div>
 

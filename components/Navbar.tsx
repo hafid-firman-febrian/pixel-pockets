@@ -30,7 +30,7 @@ function Navbar() {
           </p>
         </Link>
 
-        {/* Menu Navigasi */}
+        {/* Navigation menu */}
         <div className="flex md:ml-auto md:mr-0 m-auto gap-2">
           <Navlink href="/">#home</Navlink>
           <Navlink href="/input">/input</Navlink>

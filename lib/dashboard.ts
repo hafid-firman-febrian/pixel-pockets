@@ -153,7 +153,7 @@ export function getTransactionListFilterLabel(filter: TransactionListFilter) {
     case "year":
       return "this year";
     default:
-      return "all adata";
+      return "all data";
   }
 }
 
@@ -163,7 +163,7 @@ export function getTransactionPeriodLabel(
   now: Date = new Date(),
 ) {
   if (filter === "all") {
-    return "semua data";
+    return "all data";
   }
 
   const reference = new Date(now);

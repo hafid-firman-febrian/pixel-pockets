@@ -8,7 +8,7 @@ import "./globals.css";
 const inconsolata = Inconsolata({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inconsolata", // Membuat CSS Variable
+  variable: "--font-inconsolata", // Expose a CSS variable for global usage.
 });
 
 export const metadata: Metadata = {

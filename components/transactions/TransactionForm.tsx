@@ -199,7 +199,7 @@ export default function TransactionForm({
                 onChange={() => updateField("type", "Expense")}
                 className="h-4 w-4 accent-slate-900"
               />
-              <span>Expenses</span>
+              <span>Expense</span>
             </label>
           </div>
         </fieldset>
@@ -209,9 +209,8 @@ export default function TransactionForm({
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-slate-700">
-              Nominal
+              Amount
             </p>
-            
           </div>
           <p className="text-sm font-medium text-slate-700">
             Preview: {formatCurrency(amountValue)}
@@ -223,7 +222,7 @@ export default function TransactionForm({
             type="button"
             onClick={() => adjustAmount(-AMOUNT_STEP)}
             className="border border-black bg-white px-4 py-3 text-lg font-bold text-slate-900 transition-colors hover:bg-slate-100"
-            aria-label="Kurangi nominal"
+            aria-label="Decrease amount"
           >
             -
           </button>
@@ -247,7 +246,7 @@ export default function TransactionForm({
             type="button"
             onClick={() => adjustAmount(AMOUNT_STEP)}
             className="border border-black bg-yellow-300 px-4 py-3 text-lg font-bold text-slate-900 transition-colors hover:bg-yellow-200"
-            aria-label="Tambah nominal"
+            aria-label="Increase amount"
           >
             +
           </button>
@@ -277,7 +276,7 @@ export default function TransactionForm({
             htmlFor="transaction-category"
             className="text-sm font-bold uppercase tracking-[0.25em] text-slate-700"
           >
-            Kategori
+            Category
           </label>
           <select
             id="transaction-category"
@@ -348,7 +347,7 @@ export default function TransactionForm({
             onClick={onCancel}
             className="border border-black bg-white px-4 py-3 text-sm font-bold uppercase text-slate-900 transition-colors hover:bg-slate-100"
           >
-            Batal
+            Cancel
           </button>
         ) : null}
         <button

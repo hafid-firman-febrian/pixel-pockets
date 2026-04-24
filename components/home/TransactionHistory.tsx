@@ -195,7 +195,7 @@ function TransactionCard({
 
       <div className="mt-4 flex flex-wrap gap-2 border-t border-dashed border-slate-300 pt-4">
         <ActionButton label="Edit" onClick={onEdit} />
-        <ActionButton label="Hapus" onClick={onDelete} tone="danger" />
+        <ActionButton label="Delete" onClick={onDelete} tone="danger" />
       </div>
     </article>
   );
@@ -318,7 +318,7 @@ export default function TransactionHistory({
         <div className="mt-6 space-y-6">
           {groupedTransactions.length === 0 ? (
             <div className="flex min-h-48 items-center justify-center border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm leading-6 text-slate-500">
-              Belum ada transaksi pada rentang waktu ini.
+              No transactions found for this period.
             </div>
           ) : (
             groupedTransactions.map((group) => (
@@ -388,7 +388,7 @@ export default function TransactionHistory({
                                 }
                               />
                               <ActionButton
-                                label="Hapus"
+                                label="Delete"
                                 onClick={() =>
                                   setDeletingTransactionId(transaction.id)
                                 }
@@ -431,13 +431,13 @@ export default function TransactionHistory({
 
       {editingTransaction ? (
         <Modal
-          title="Edit transaksi"
-          description="Perbarui detail transaksi. Form yang dipakai sama dengan form tambah data."
+          title="Edit transaction"
+          description="Update the transaction details. This uses the same form as adding a new transaction."
           onClose={() => setEditingTransactionId(null)}
         >
           <TransactionForm
             initialValues={mapTransactionToFormValues(editingTransaction)}
-            submitLabel="Simpan perubahan"
+            submitLabel="Save changes"
             onSubmit={handleEditSubmit}
             onCancel={() => setEditingTransactionId(null)}
           />
@@ -446,30 +446,30 @@ export default function TransactionHistory({
 
       {deletingTransaction ? (
         <Modal
-          title="Hapus transaksi"
-          description="Konfirmasi ini akan menghapus transaksi dari histori pada session saat ini."
+          title="Delete transaction"
+          description="This confirmation will delete the transaction from the current session history."
           onClose={() => setDeletingTransactionId(null)}
         >
           <div className="space-y-6">
             <div className="border border-black bg-slate-50 p-4">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
-                /transaksi terpilih
+                /selected transaction
               </p>
               <div className="mt-3 space-y-2 text-sm text-slate-700">
                 <p>
-                  <span className="font-bold text-slate-900">Tanggal:</span>{" "}
+                  <span className="font-bold text-slate-900">Date:</span>{" "}
                   {formatRowDate(deletingTransaction.date)}
                 </p>
                 <p>
-                  <span className="font-bold text-slate-900">Kategori:</span>{" "}
+                  <span className="font-bold text-slate-900">Category:</span>{" "}
                   {deletingTransaction.category}
                 </p>
                 <p>
-                  <span className="font-bold text-slate-900">Nominal:</span>{" "}
+                  <span className="font-bold text-slate-900">Amount:</span>{" "}
                   {formatCurrency(deletingTransaction.amount)}
                 </p>
                 <p>
-                  <span className="font-bold text-slate-900">Deskripsi:</span>{" "}
+                  <span className="font-bold text-slate-900">Description:</span>{" "}
                   {deletingTransaction.description || "-"}
                 </p>
               </div>
@@ -481,14 +481,14 @@ export default function TransactionHistory({
                 onClick={() => setDeletingTransactionId(null)}
                 className="border border-black bg-white px-4 py-3 text-sm font-bold uppercase text-slate-900 transition-colors hover:bg-slate-100"
               >
-                Batal
+                Cancel
               </button>
               <button
                 type="button"
                 onClick={handleDeleteConfirm}
                 className="border border-black bg-red-100 px-4 py-3 text-sm font-bold uppercase text-red-900 transition-colors hover:bg-red-200"
               >
-                Ya, hapus transaksi
+                Yes, delete transaction
               </button>
             </div>
           </div>
