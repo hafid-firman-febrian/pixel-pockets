@@ -21,7 +21,7 @@ function Navbar() {
     <>
       <nav className="grid md:grid-cols-2 grid-cols-1 md:gap-4 gap-1 items-center">
         {/* Logo / Title */}
-        <Link href="/">
+        <Link href="/home">
           <p className="lg:text-4xl text-2xl md:text-left text-center text-slate-900 font-mono">
             ~${" "}
             <span className="bg-yellow-300 mx-1 lg:text-4xl text-2xl px-2 font-bold">
@@ -32,7 +32,7 @@ function Navbar() {
 
         {/* Navigation menu */}
         <div className="flex md:ml-auto md:mr-0 m-auto gap-2">
-          <Navlink href="/">#home</Navlink>
+          <Navlink href="/home">#home</Navlink>
           <Navlink href="/input">/input</Navlink>
         </div>
       </nav>
