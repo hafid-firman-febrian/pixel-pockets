@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import AddTransactionFab from "@/components/home/AddTransactionFab";
 import SummaryCard from "@/components/SummaryCard";
 import TransactionCharts from "@/components/home/TransactionCharts";
 import TransactionHistory from "@/components/home/TransactionHistory";
@@ -56,7 +57,8 @@ export default function HomeDashboard({ transactions }: HomeDashboardProps) {
   const categoryData = buildCategoryData(filteredTransactions);
 
   return (
-    <section className="space-y-6 pb-8">
+    <>
+    <section className="space-y-6 pb-24 md:pb-8">
       <div className="border border-black bg-white p-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
@@ -106,5 +108,7 @@ export default function HomeDashboard({ transactions }: HomeDashboardProps) {
 
       <TransactionHistory transactions={transactions} />
     </section>
+    <AddTransactionFab />
+    </>
   );
 }

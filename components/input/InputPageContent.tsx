@@ -1,5 +1,6 @@
 "use client";
 
+import BackToHomeFab from "@/components/input/BackToHomeFab";
 import TransactionForm from "@/components/transactions/TransactionForm";
 import { useTransactionActions } from "@/hooks/useTransactionActions";
 
@@ -7,7 +8,8 @@ export default function InputPageContent() {
   const { addTransaction } = useTransactionActions();
 
   return (
-    <section className="space-y-6 pb-8">
+    <>
+    <section className="space-y-6 pb-24 md:pb-8">
       <div className="border border-black bg-white p-4">
       <p className="text-xs font-bold uppercase tracking-[0.35em] text-slate-500">
             /Input Form
@@ -41,5 +43,7 @@ export default function InputPageContent() {
         />
       </section>
     </section>
+    <BackToHomeFab />
+    </>
   );
 }
