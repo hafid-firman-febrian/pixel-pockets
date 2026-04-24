@@ -13,9 +13,35 @@ import {
   type TransactionPeriodState,
   type TransactionListFilter,
 } from "@/lib/dashboard";
-import { mapTransactionToFormValues } from "@/lib/transaction-form";
+import {
+  mapTransactionToFormValues,
+  resolveTransactionCategory,
+  type TransactionFormValues,
+} from "@/lib/transaction-form";
 import type { TransactionRecord } from "@/lib/transactions";
-import { useState, type ReactNode } from "react";
+import {
+  startTransition,
+  useOptimistic,
+  useState,
+  type ReactNode,
+} from "react";
+
+type OptimisticAction =
+  | { type: "delete"; id: string }
+  | { type: "update"; record: TransactionRecord };
+
+function applyOptimistic(
+  state: TransactionRecord[],
+  action: OptimisticAction,
+): TransactionRecord[] {
+  if (action.type === "delete") {
+    return state.filter((transaction) => transaction.id !== action.id);
+  }
+
+  return state.map((transaction) =>
+    transaction.id === action.record.id ? action.record : transaction,
+  );
+}
 
 interface TransactionHistoryProps {
   transactions: TransactionRecord[];
@@ -205,6 +231,10 @@ export default function TransactionHistory({
   transactions,
 }: TransactionHistoryProps) {
   const { deleteTransaction, updateTransaction } = useTransactionActions();
+  const [optimisticTransactions, applyOptimisticAction] = useOptimistic(
+    transactions,
+    applyOptimistic,
+  );
   const [periodState, setPeriodState] = useState<TransactionPeriodState>({
     filter: "week",
     offset: 0,
@@ -216,17 +246,22 @@ export default function TransactionHistory({
     null,
   );
 
-  const filteredResult = getTransactionListPeriodResult(transactions, periodState);
+  const filteredResult = getTransactionListPeriodResult(
+    optimisticTransactions,
+    periodState,
+  );
   const filteredTransactions = filteredResult.transactions;
   const groupedTransactions = groupTransactionsByDay(filteredTransactions);
   const totals = buildTransactionTotals(filteredTransactions);
   const showPeriodNavigation = periodState.filter !== "all";
   const editingTransaction =
-    transactions.find((transaction) => transaction.id === editingTransactionId) ??
-    null;
+    optimisticTransactions.find(
+      (transaction) => transaction.id === editingTransactionId,
+    ) ?? null;
   const deletingTransaction =
-    transactions.find((transaction) => transaction.id === deletingTransactionId) ??
-    null;
+    optimisticTransactions.find(
+      (transaction) => transaction.id === deletingTransactionId,
+    ) ?? null;
 
   function handleFilterChange(filter: TransactionListFilter) {
     setPeriodState({
@@ -242,13 +277,26 @@ export default function TransactionHistory({
     }));
   }
 
-  function handleEditSubmit(values: ReturnType<typeof mapTransactionToFormValues>) {
-    if (!editingTransactionId) {
+  function handleEditSubmit(values: TransactionFormValues) {
+    if (!editingTransactionId || !editingTransaction) {
       return;
     }
 
-    updateTransaction(editingTransactionId, values);
+    const id = editingTransactionId;
+    const optimisticRecord: TransactionRecord = {
+      ...editingTransaction,
+      date: values.date,
+      type: values.type,
+      amount: values.amount,
+      category: resolveTransactionCategory(values),
+      description: values.description.trim(),
+    };
+
     setEditingTransactionId(null);
+    startTransition(async () => {
+      applyOptimisticAction({ type: "update", record: optimisticRecord });
+      await updateTransaction(id, values);
+    });
   }
 
   function handleDeleteConfirm() {
@@ -256,8 +304,12 @@ export default function TransactionHistory({
       return;
     }
 
-    deleteTransaction(deletingTransactionId);
+    const id = deletingTransactionId;
     setDeletingTransactionId(null);
+    startTransition(async () => {
+      applyOptimisticAction({ type: "delete", id });
+      await deleteTransaction(id);
+    });
   }
 
   return (
