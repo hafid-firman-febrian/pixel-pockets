@@ -206,7 +206,7 @@ export default function TransactionHistory({
 }: TransactionHistoryProps) {
   const { deleteTransaction, updateTransaction } = useTransactions();
   const [periodState, setPeriodState] = useState<TransactionPeriodState>({
-    filter: "all",
+    filter: "week",
     offset: 0,
   });
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(

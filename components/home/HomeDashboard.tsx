@@ -45,7 +45,7 @@ function FilterButton({ isActive, label, onClick }: FilterButtonProps) {
 
 export default function HomeDashboard() {
   const { transactions } = useTransactions();
-  const [activeFilter, setActiveFilter] = useState<DashboardFilter>("week");
+  const [activeFilter, setActiveFilter] = useState<DashboardFilter>("month");
 
   const filteredTransactions = filterTransactions(transactions, activeFilter);
   const summary = buildSummary(filteredTransactions);
