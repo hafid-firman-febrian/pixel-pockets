@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 
+import { logoutAction } from "@/app/actions/auth";
+
 interface NavlinkProps {
   children: ReactNode;
   href: string;
@@ -31,9 +33,17 @@ function Navbar() {
         </Link>
 
         {/* Navigation menu */}
-        <div className="flex md:ml-auto md:mr-0 m-auto gap-2">
+        <div className="flex md:ml-auto md:mr-0 m-auto gap-2 items-center">
           <Navlink href="/home">#home</Navlink>
           <Navlink href="/input">/input</Navlink>
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="active:bg-red-300 hover:bg-red-300 px-2 cursor-pointer transition-colors font-mono"
+            >
+              /logout
+            </button>
+          </form>
         </div>
       </nav>
 
