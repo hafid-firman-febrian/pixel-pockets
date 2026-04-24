@@ -111,6 +111,63 @@ Replace `PIN_HASH` and (optionally) `SESSION_SECRET` in `.env.local` **and** in 
 
 ---
 
+## Importing transactions from CSV
+
+Use this when you have an external sheet of real transactions (e.g., Google Sheets, Numbers, Excel) and want to replace what's currently in the DB.
+
+### Steps
+
+1. **Export the sheet to CSV.** In Google Sheets: **File → Download → Comma Separated Values**.
+2. Save the file to `data/transactions-import.csv` at the repo root. The `data/` folder is gitignored so the CSV never ends up in source control.
+3. **Align the column mapping.** Open [scripts/import-transactions.ts](scripts/import-transactions.ts) and edit the `COLUMN_MAPPING` const near the top. The right-hand strings are the headers in your CSV. The script will fail fast with a clear diff if a mapped header is missing.
+4. **Dry-run first.** See what would be imported without touching the DB:
+   ```bash
+   npm run db:import -- --dry-run
+   ```
+   Inspect the summary: valid count, per-type totals, unknown categories, skipped rows. Fix upstream in the sheet if anything's off.
+5. **Import for real:**
+   ```bash
+   npm run db:import
+   ```
+   Type `REPLACE` at the prompt to confirm. A JSON backup of your current DB is written to `data/backups/` **before** the wipe. The script then deletes all rows and bulk-inserts the CSV contents in batches of 500.
+
+Flags:
+- `--file <path>` — alternate CSV path (default `data/transactions-import.csv`).
+- `--confirm` — skip the interactive prompt (for scripted runs).
+- `--skip-backup` — skip the pre-wipe backup (not recommended).
+- `--dry-run` — show the summary and exit without touching the DB.
+- `--reset-ids` — reset the `id` serial sequence to 1 after wipe (default: leave it).
+
+**Stop `npm run dev` before importing** — holding open DB queries while wiping and re-inserting races with the UI.
+
+### Supported source formats
+
+The parser is opinionated about the messy shapes you get out of Google Sheets:
+
+| Field | Accepted | Examples |
+|---|---|---|
+| `type` | case-insensitive lookup | `Income` / `Expense`, `Pemasukan` / `Pengeluaran`, `Masuk` / `Keluar`, `+` / `-` |
+| `amount` | integer IDR, currency/grouping stripped | `50000`, `Rp 50.000`, `50,000`, `Rp 1.500.000`, `50.000,00` |
+| `transactionDate` | ISO or day-first | `2025-09-14`, `14/09/2025`, `14-09-2025`. A locale fallback is used for anything else and flagged as timezone-risky. |
+| `category` | free text, ≤ 100 chars | Unknown values (not in `TRANSACTION_CATEGORIES`) still import — the DB column is free-text. |
+| `description` | non-empty, ≤ 255 chars | Rows exceeding 255 chars are skipped with an error. |
+
+Rows that fail any of these are **skipped**, reported by row number at the end, and the rest of the import proceeds.
+
+### Rolling back
+
+Every import writes a backup JSON at `data/backups/transactions-<timestamp>.json` before deleting. To restore:
+
+```bash
+npm run db:restore -- --file data/backups/transactions-2026-04-25T10-00-00-000Z.json
+```
+
+Type `RESTORE` at the prompt. The restore script preserves original `id` values and repairs the serial sequence via `setval(pg_get_serial_sequence(...), MAX(id))`.
+
+Add `--confirm` to skip the prompt.
+
+---
+
 ## Deploying to Vercel
 
 The repo is ready to deploy — Vercel auto-detects Next.js. Only thing you need is to mirror `.env.local` into Vercel's environment variables.
@@ -140,6 +197,9 @@ Schema changes deploy automatically because SQL files under `db/migrations/` are
 | `npm run db:studio` | Launch Drizzle Studio to browse data |
 | `npm run db:seed` | Insert dummy transactions (no-op if table non-empty) |
 | `npm run db:seed -- --force` | Wipe and reseed |
+| `npm run db:import` | Import from `data/transactions-import.csv` (wipes DB, writes backup first) |
+| `npm run db:import -- --dry-run` | Preview the import without touching the DB |
+| `npm run db:restore -- --file <path>` | Restore from a backup JSON under `data/backups/` |
 | `npm run auth:hash-pin -- <PIN>` | Hash a PIN and generate a session secret |
 
 ---
