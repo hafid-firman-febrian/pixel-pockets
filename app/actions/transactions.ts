@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
+import * as sheets from "@/lib/server/sheets";
 import {
   createTransaction,
   deleteTransaction,
@@ -44,11 +46,28 @@ function revalidate() {
   revalidatePath("/input");
 }
 
+function scheduleSheetSync(
+  op: "append" | "update" | "delete",
+  run: () => Promise<void>,
+  context: Record<string, unknown>,
+) {
+  after(async () => {
+    try {
+      await run();
+    } catch (err) {
+      console.error(`[sheet-sync] ${op} failed`, { ...context, err });
+    }
+  });
+}
+
 export async function addTransactionAction(
   values: TransactionFormValues,
 ): Promise<TransactionRecord> {
   const record = await createTransaction(toInput(values));
   revalidate();
+  scheduleSheetSync("append", () => sheets.appendRow(record), {
+    id: record.id,
+  });
   return record;
 }
 
@@ -57,12 +76,18 @@ export async function updateTransactionAction(
   values: TransactionFormValues,
 ): Promise<TransactionRecord | null> {
   const record = await updateTransaction(id, toInput(values));
-  if (record) revalidate();
+  if (record) {
+    revalidate();
+    scheduleSheetSync("update", () => sheets.updateRow(record), { id });
+  }
   return record;
 }
 
 export async function deleteTransactionAction(id: string): Promise<boolean> {
   const deleted = await deleteTransaction(id);
-  if (deleted) revalidate();
+  if (deleted) {
+    revalidate();
+    scheduleSheetSync("delete", () => sheets.deleteRow(id), { id });
+  }
   return deleted;
 }
