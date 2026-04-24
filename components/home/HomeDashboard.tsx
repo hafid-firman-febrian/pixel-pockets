@@ -5,7 +5,6 @@ import { useState } from "react";
 import SummaryCard from "@/components/SummaryCard";
 import TransactionCharts from "@/components/home/TransactionCharts";
 import TransactionHistory from "@/components/home/TransactionHistory";
-import { useTransactions } from "@/components/providers/TransactionProvider";
 import {
   buildCategoryData,
   buildSummary,
@@ -14,6 +13,7 @@ import {
   getFilterLabel,
   type DashboardFilter,
 } from "@/lib/dashboard";
+import type { TransactionRecord } from "@/lib/transactions";
 
 const FILTER_OPTIONS: { label: string; value: DashboardFilter }[] = [
   { label: "All", value: "all" },
@@ -43,8 +43,11 @@ function FilterButton({ isActive, label, onClick }: FilterButtonProps) {
   );
 }
 
-export default function HomeDashboard() {
-  const { transactions } = useTransactions();
+interface HomeDashboardProps {
+  transactions: TransactionRecord[];
+}
+
+export default function HomeDashboard({ transactions }: HomeDashboardProps) {
   const [activeFilter, setActiveFilter] = useState<DashboardFilter>("month");
 
   const filteredTransactions = filterTransactions(transactions, activeFilter);

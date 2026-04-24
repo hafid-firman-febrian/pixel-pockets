@@ -1,7 +1,7 @@
 "use client";
 
 import Modal from "@/components/ui/Modal";
-import { useTransactions } from "@/components/providers/TransactionProvider";
+import { useTransactionActions } from "@/hooks/useTransactionActions";
 import TransactionForm from "@/components/transactions/TransactionForm";
 import {
   buildTransactionTotals,
@@ -204,7 +204,7 @@ function TransactionCard({
 export default function TransactionHistory({
   transactions,
 }: TransactionHistoryProps) {
-  const { deleteTransaction, updateTransaction } = useTransactions();
+  const { deleteTransaction, updateTransaction } = useTransactionActions();
   const [periodState, setPeriodState] = useState<TransactionPeriodState>({
     filter: "week",
     offset: 0,

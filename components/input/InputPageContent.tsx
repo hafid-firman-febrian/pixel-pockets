@@ -1,10 +1,10 @@
 "use client";
 
 import TransactionForm from "@/components/transactions/TransactionForm";
-import { useTransactions } from "@/components/providers/TransactionProvider";
+import { useTransactionActions } from "@/hooks/useTransactionActions";
 
 export default function InputPageContent() {
-  const { addTransaction } = useTransactions();
+  const { addTransaction } = useTransactionActions();
 
   return (
     <section className="space-y-6 pb-8">
