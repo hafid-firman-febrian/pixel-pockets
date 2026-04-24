@@ -23,7 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inconsolata.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-mono">
+      <body
+        className="min-h-full flex flex-col font-mono"
+        suppressHydrationWarning
+      >
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
