@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import Link from "next/link";
 
 import LogoutButton from "@/components/LogoutButton";
+import NavigationLinkReporter from "@/components/nav/NavigationLinkReporter";
 
 interface NavlinkProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ function Navlink({ children, href }: NavlinkProps) {
       <div className="active:bg-yellow-300 hover:bg-yellow-300 px-2 cursor-pointer transition-colors font-mono">
         {children}
       </div>
+      <NavigationLinkReporter />
     </Link>
   );
 }
@@ -30,6 +32,7 @@ function Navbar() {
               Pixel-Pockets
             </span>
           </p>
+          <NavigationLinkReporter />
         </Link>
 
         {/* Navigation menu */}

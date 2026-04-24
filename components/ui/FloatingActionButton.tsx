@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import NavigationLinkReporter from "@/components/nav/NavigationLinkReporter";
+
 interface FloatingActionButtonProps {
   href: string;
   label: string;
@@ -22,6 +24,7 @@ export default function FloatingActionButton({
       }}
     >
       {children}
+      <NavigationLinkReporter />
     </Link>
   );
 }
