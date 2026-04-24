@@ -168,6 +168,54 @@ Add `--confirm` to skip the prompt.
 
 ---
 
+## Syncing to a Google Sheet (optional)
+
+Each add / edit / delete from the app can mirror into a Google Sheet so you have a spreadsheet view of your data that stays in sync automatically. The database is the source of truth; the sheet is a read-friendly reflection.
+
+### One-time Google Cloud setup
+
+1. Open the [Google Cloud Console](https://console.cloud.google.com/) and create (or select) a project.
+2. **APIs & Services → Library** → search "Google Sheets API" → **Enable**.
+3. **IAM & Admin → Service Accounts → Create Service Account**. Pick any name (e.g. `pixel-pockets-sheets`). Skip the optional "grant roles" step.
+4. Open the service account → **Keys → Add Key → Create new key → JSON**. A `credentials.json` file downloads. **Keep this private.**
+5. Open your target Google Spreadsheet → **Share** → paste the service account's email (ends in `...iam.gserviceaccount.com`, visible on the account page) → grant **Editor** access.
+
+### Env vars
+
+The app reads three variables:
+
+| Name | Value |
+|---|---|
+| `GOOGLE_SHEETS_CREDENTIALS` | Base64 of the downloaded JSON: `base64 -i credentials.json \| pbcopy` (macOS) or `base64 -w0 credentials.json` (linux). Paste the full base64 string. |
+| `GOOGLE_SHEETS_ID` | The long ID from the spreadsheet URL, between `/d/` and `/edit`. |
+| `GOOGLE_SHEETS_TAB_NAME` | Optional. Defaults to `transactions`. The script creates this tab on first resync if missing. |
+
+Add all three to `.env.local` locally and to **Vercel → Settings → Environment Variables** (tick all three environments). Without these, sync is silently a no-op — the app keeps working, the sheet just doesn't update.
+
+### Initial seeding
+
+Push everything currently in the DB into the sheet for the first time:
+
+```bash
+npm run sheet:resync
+```
+
+This ensures the tab exists with the right headers, clears any existing contents, and writes every DB row. Run it again any time the sheet and DB have drifted (e.g. after a CSV import, or after editing rows in the sheet directly — those direct edits are not synced back).
+
+### How ongoing sync works
+
+After setup, every add / edit / delete through the app:
+
+1. Writes to the DB first (single source of truth).
+2. Schedules a sheet write via Next's `after()` so the user's click response isn't blocked on the Google API.
+3. If the sheet write fails (network, rate limit, lost access), the error is logged server-side but the user's action still succeeds. Run `npm run sheet:resync` to reconcile.
+
+**Row matching** is by the `ID` column (the leftmost column in the synced tab). Don't delete or rewrite that column manually — if a DB row can't find its match on edit, the script falls back to appending a duplicate.
+
+**Direct sheet edits are not read back.** The sheet is a view of the DB, not an input to it.
+
+---
+
 ## Deploying to Vercel
 
 The repo is ready to deploy — Vercel auto-detects Next.js. Only thing you need is to mirror `.env.local` into Vercel's environment variables.
@@ -200,6 +248,7 @@ Schema changes deploy automatically because SQL files under `db/migrations/` are
 | `npm run db:import` | Import from `data/transactions-import.csv` (wipes DB, writes backup first) |
 | `npm run db:import -- --dry-run` | Preview the import without touching the DB |
 | `npm run db:restore -- --file <path>` | Restore from a backup JSON under `data/backups/` |
+| `npm run sheet:resync` | Rebuild the Google Sheet tab from the current DB |
 | `npm run auth:hash-pin -- <PIN>` | Hash a PIN and generate a session secret |
 
 ---
