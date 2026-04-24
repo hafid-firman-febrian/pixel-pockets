@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# CSV imports + local DB backups — personal data, keep out of git
+/data/*.csv
+/data/backups/

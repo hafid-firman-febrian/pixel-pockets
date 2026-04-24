@@ -12,10 +12,13 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx db/seed.ts",
+    "db:import": "tsx scripts/import-transactions.ts",
+    "db:restore": "tsx scripts/restore-transactions.ts",
     "auth:hash-pin": "tsx scripts/hash-pin.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "csv-parse": "^6.2.1",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.3",
     "postcss": "^8.5.9",
