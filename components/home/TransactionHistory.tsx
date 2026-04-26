@@ -189,7 +189,7 @@ function TransactionCard({
             {formatCurrency(transaction.amount)}
           </p>
         </div>
-        <TypeBadge type={transaction.type} />
+        <TypeBadge type={transaction.type} /> 
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -209,10 +209,10 @@ function TransactionCard({
             </span>
           }
         />
-        <TransactionField
+        {/* <TransactionField
           label="Type"
           value={<TypeBadge type={transaction.type} />}
-        />
+        /> */}
         <TransactionField
           label="Description"
           value={transaction.description || "-"}
