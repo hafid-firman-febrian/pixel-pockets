@@ -1,14 +1,16 @@
 export const TRANSACTION_CATEGORIES = [
-  "Meal",
-  "Beverage",
   "Groceries",
-  "Transport",
-  "Selfcare",
-  "Subscription",
-  "E-commerce",
+  "Beverage",
+  "Coffee",
+  "Cigarettes",
   "Daily Needs",
+  "E-commerce",
   "Entertainment",
   "Housing",
+  "Meal",
+  "Selfcare",
+  "Subscription",
+  "Transport",
 ] as const;
 
 export type TransactionType = "Income" | "Expense";
