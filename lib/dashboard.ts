@@ -1,6 +1,11 @@
 import type { TransactionCategory, TransactionRecord } from "@/lib/transactions";
 
-export type DashboardFilter = "all" | "month" | "week";
+export type DashboardFilter =
+  | "all"
+  | "week"
+  | "month"
+  | "salaryPeriod"
+  | "year";
 export type TransactionListFilter = "all" | "month" | "week" | "year";
 
 export interface SummaryTotals {
@@ -125,7 +130,41 @@ function endOfYear(date: Date) {
   return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
 }
 
+const SALARY_PAYDAY = 27;
+
+function startOfSalaryPeriod(date: Date) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  if (date.getDate() >= SALARY_PAYDAY) {
+    return new Date(year, month, SALARY_PAYDAY, 0, 0, 0, 0);
+  }
+
+  return new Date(year, month - 1, SALARY_PAYDAY, 0, 0, 0, 0);
+}
+
+function endOfSalaryPeriod(date: Date) {
+  const start = startOfSalaryPeriod(date);
+  return new Date(
+    start.getFullYear(),
+    start.getMonth() + 1,
+    SALARY_PAYDAY - 1,
+    23,
+    59,
+    59,
+    999,
+  );
+}
+
 function formatWeekRange(start: Date, end: Date) {
+  return `${weekRangeFormatter.format(start)} - ${weekRangeFormatter.format(end)}`;
+}
+
+export function formatSalaryPeriodRange(now: Date = new Date()) {
+  const reference = new Date(now);
+  reference.setHours(12, 0, 0, 0);
+  const start = startOfSalaryPeriod(reference);
+  const end = endOfSalaryPeriod(reference);
   return `${weekRangeFormatter.format(start)} - ${weekRangeFormatter.format(end)}`;
 }
 
@@ -139,6 +178,10 @@ export function getFilterLabel(filter: DashboardFilter) {
       return "this month";
     case "week":
       return "this week";
+    case "salaryPeriod":
+      return "this salary period";
+    case "year":
+      return "this year";
     default:
       return "all data";
   }
@@ -195,20 +238,26 @@ export function filterTransactions(
   const reference = new Date(now);
   reference.setHours(12, 0, 0, 0);
 
-  const weekStart = startOfWeek(reference);
-  const weekEnd = endOfWeek(reference);
+  let periodStart: Date;
+  let periodEnd: Date;
+
+  if (filter === "week") {
+    periodStart = startOfWeek(reference);
+    periodEnd = endOfWeek(reference);
+  } else if (filter === "month") {
+    periodStart = startOfMonth(reference);
+    periodEnd = endOfMonth(reference);
+  } else if (filter === "salaryPeriod") {
+    periodStart = startOfSalaryPeriod(reference);
+    periodEnd = endOfSalaryPeriod(reference);
+  } else {
+    periodStart = startOfYear(reference);
+    periodEnd = endOfYear(reference);
+  }
 
   return transactions.filter((transaction) => {
     const transactionDate = parseDateOnly(transaction.date);
-
-    if (filter === "month") {
-      return (
-        transactionDate.getFullYear() === reference.getFullYear() &&
-        transactionDate.getMonth() === reference.getMonth()
-      );
-    }
-
-    return transactionDate >= weekStart && transactionDate <= weekEnd;
+    return transactionDate >= periodStart && transactionDate <= periodEnd;
   });
 }
 

@@ -14,15 +14,18 @@ import {
   Rectangle,
 } from "recharts";
 
+import CategoryTransactionList from "@/components/home/CategoryTransactionList";
 import {
   formatCurrency,
   type CategoryDatum,
   type TrendDatum,
 } from "@/lib/dashboard";
+import type { TransactionRecord } from "@/lib/transactions";
 
 interface TransactionChartsProps {
   trendData: TrendDatum[];
   categoryData: CategoryDatum[];
+  filteredTransactions: TransactionRecord[];
   filterLabel: string;
 }
 
@@ -72,18 +75,68 @@ function EmptyChartState({ message }: { message: string }) {
   );
 }
 
+interface CategoryRowProps {
+  category: string;
+  amount: number;
+  color: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function CategoryRow({
+  category,
+  amount,
+  color,
+  isActive,
+  onClick,
+}: CategoryRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={isActive}
+      className={`flex w-full items-center justify-between gap-3 border border-black px-3 py-2 text-left text-sm transition-[background-color,box-shadow,transform] ${
+        isActive
+          ? "bg-yellow-300 shadow-[4px_4px_0_0_#000]"
+          : "bg-slate-50 hover:bg-slate-100"
+      }`}
+    >
+      <div className="flex min-w-0 items-center gap-2 text-slate-700">
+        <span
+          className="h-3 w-3 shrink-0 border border-black"
+          style={{ backgroundColor: color }}
+        />
+        <span className="truncate">{category}</span>
+      </div>
+      <span className="font-bold text-slate-900">{formatCurrency(amount)}</span>
+    </button>
+  );
+}
+
 export default function TransactionCharts({
   trendData,
   categoryData,
+  filteredTransactions,
   filterLabel,
 }: TransactionChartsProps) {
   const isMounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const hiddenCategoryCount = Math.max(
     categoryData.length - DEFAULT_VISIBLE_CATEGORIES,
     0,
   );
   const visibleCategories = categoryData.slice(0, DEFAULT_VISIBLE_CATEGORIES);
+
+  const activeCategory =
+    selectedCategory &&
+    categoryData.some((datum) => datum.category === selectedCategory)
+      ? selectedCategory
+      : null;
+
+  function toggleCategory(category: string) {
+    setSelectedCategory((current) => (current === category ? null : category));
+  }
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
@@ -172,21 +225,14 @@ export default function TransactionCharts({
         ) : (
           <div className="space-y-2">
             {visibleCategories.map((item, index) => (
-              <div
+              <CategoryRow
                 key={item.category}
-                className="flex items-center justify-between gap-3 border border-black bg-slate-50 px-3 py-2 text-sm"
-              >
-                <div className="flex items-center gap-2 text-slate-700">
-                  <span
-                    className="h-3 w-3 border border-black"
-                    style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
-                  />
-                  <span>{item.category}</span>
-                </div>
-                <span className="font-bold text-slate-900">
-                  {formatCurrency(item.amount)}
-                </span>
-              </div>
+                category={item.category}
+                amount={item.amount}
+                color={PIE_COLORS[index % PIE_COLORS.length]}
+                isActive={activeCategory === item.category}
+                onClick={() => toggleCategory(item.category)}
+              />
             ))}
 
             {hiddenCategoryCount > 0 ? (
@@ -203,27 +249,19 @@ export default function TransactionCharts({
                     {categoryData
                       .slice(DEFAULT_VISIBLE_CATEGORIES)
                       .map((item, index) => (
-                        <div
+                        <CategoryRow
                           key={item.category}
-                          className="flex items-center justify-between gap-3 border border-black bg-slate-50 px-3 py-2 text-sm"
-                        >
-                          <div className="flex items-center gap-2 text-slate-700">
-                            <span
-                              className="h-3 w-3 border border-black"
-                              style={{
-                                backgroundColor:
-                                  PIE_COLORS[
-                                    (index + DEFAULT_VISIBLE_CATEGORIES) %
-                                      PIE_COLORS.length
-                                  ],
-                              }}
-                            />
-                            <span>{item.category}</span>
-                          </div>
-                          <span className="font-bold text-slate-900">
-                            {formatCurrency(item.amount)}
-                          </span>
-                        </div>
+                          category={item.category}
+                          amount={item.amount}
+                          color={
+                            PIE_COLORS[
+                              (index + DEFAULT_VISIBLE_CATEGORIES) %
+                                PIE_COLORS.length
+                            ]
+                          }
+                          isActive={activeCategory === item.category}
+                          onClick={() => toggleCategory(item.category)}
+                        />
                       ))}
                   </div>
                 </div>
@@ -240,6 +278,25 @@ export default function TransactionCharts({
                 {showAllCategories ? "Less" : `More ${hiddenCategoryCount}+`}
               </button>
             ) : null}
+
+            <div
+              className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                activeCategory
+                  ? "grid-rows-[1fr] opacity-100"
+                  : "grid-rows-[0fr] opacity-0"
+              }`}
+              aria-hidden={!activeCategory}
+            >
+              <div className="min-h-0 overflow-hidden">
+                {activeCategory ? (
+                  <CategoryTransactionList
+                    transactions={filteredTransactions}
+                    category={activeCategory}
+                    onClear={() => setSelectedCategory(null)}
+                  />
+                ) : null}
+              </div>
+            </div>
           </div>
         )}
       </ChartPanel>

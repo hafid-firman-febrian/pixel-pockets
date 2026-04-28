@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import AddTransactionFab from "@/components/home/AddTransactionFab";
 import SummaryCard from "@/components/SummaryCard";
@@ -11,16 +11,19 @@ import {
   buildSummary,
   buildTrendData,
   filterTransactions,
+  formatSalaryPeriodRange,
   getFilterLabel,
   type DashboardFilter,
 } from "@/lib/dashboard";
 import type { TransactionRecord } from "@/lib/transactions";
 
-const FILTER_OPTIONS: { label: string; value: DashboardFilter }[] = [
-  { label: "All", value: "all" },
-  { label: "Month", value: "month" },
+const FILTER_OPTIONS = [
   { label: "Week", value: "week" },
-];
+  { label: "Month", value: "month" },
+  { label: "Salary Period", value: "salaryPeriod" },
+  { label: "Year", value: "year" },
+  { label: "All", value: "all" },
+] satisfies Array<{ label: string; value: DashboardFilter }>;
 
 interface FilterButtonProps {
   isActive: boolean;
@@ -49,12 +52,29 @@ interface HomeDashboardProps {
 }
 
 export default function HomeDashboard({ transactions }: HomeDashboardProps) {
-  const [activeFilter, setActiveFilter] = useState<DashboardFilter>("month");
+  const [activeFilter, setActiveFilter] =
+    useState<DashboardFilter>("salaryPeriod");
 
-  const filteredTransactions = filterTransactions(transactions, activeFilter);
-  const summary = buildSummary(filteredTransactions);
-  const trendData = buildTrendData(filteredTransactions);
-  const categoryData = buildCategoryData(filteredTransactions);
+  const filteredTransactions = useMemo(
+    () => filterTransactions(transactions, activeFilter),
+    [transactions, activeFilter],
+  );
+  const summary = useMemo(
+    () => buildSummary(filteredTransactions),
+    [filteredTransactions],
+  );
+  const trendData = useMemo(
+    () => buildTrendData(filteredTransactions),
+    [filteredTransactions],
+  );
+  const categoryData = useMemo(
+    () => buildCategoryData(filteredTransactions),
+    [filteredTransactions],
+  );
+
+  const filterLabel = getFilterLabel(activeFilter);
+  const salaryPeriodRange =
+    activeFilter === "salaryPeriod" ? formatSalaryPeriodRange() : null;
 
   return (
     <>
@@ -68,11 +88,6 @@ export default function HomeDashboard({ transactions }: HomeDashboardProps) {
             <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">
               Track the money. Spot the pattern.
             </h1>
-            {/* <p className="max-w-2xl text-sm leading-6 text-slate-700">
-              This dashboard uses dummy data that already matches the final
-              Google Spreadsheet structure. Every figure and chart below reads
-              from the same data source.
-            </p> */}
           </div>
 
           <div className="flex flex-wrap gap-2 lg:justify-end">
@@ -88,7 +103,10 @@ export default function HomeDashboard({ transactions }: HomeDashboardProps) {
         </div>
 
         <div className="mt-4 flex flex-col gap-2 border-t border-dashed border-slate-300 pt-4 text-xs uppercase tracking-[0.25em] text-slate-500 md:flex-row md:items-center md:justify-between">
-          <span>[ active filter: {getFilterLabel(activeFilter)} ]</span>
+          <span>
+            [ active filter: {filterLabel}
+            {salaryPeriodRange ? ` / ${salaryPeriodRange}` : ""} ]
+          </span>
           <span>[ {filteredTransactions.length} visible transactions ]</span>
         </div>
       </div>
@@ -96,14 +114,15 @@ export default function HomeDashboard({ transactions }: HomeDashboardProps) {
       <SummaryCard
         income={summary.income}
         expense={summary.expense}
-        filterLabel={getFilterLabel(activeFilter)}
+        filterLabel={filterLabel}
         transactionCount={filteredTransactions.length}
       />
 
       <TransactionCharts
         trendData={trendData}
         categoryData={categoryData}
-        filterLabel={getFilterLabel(activeFilter)}
+        filteredTransactions={filteredTransactions}
+        filterLabel={filterLabel}
       />
 
       <TransactionHistory transactions={transactions} />
