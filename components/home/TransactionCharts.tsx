@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { Fragment, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import {
   Bar,
@@ -110,6 +110,39 @@ function CategoryRow({
       </div>
       <span className="font-bold text-slate-900">{formatCurrency(amount)}</span>
     </button>
+  );
+}
+
+interface CategoryDrilldownPanelProps {
+  open: boolean;
+  transactions: TransactionRecord[];
+  category: string;
+  onClear: () => void;
+}
+
+function CategoryDrilldownPanel({
+  open,
+  transactions,
+  category,
+  onClear,
+}: CategoryDrilldownPanelProps) {
+  return (
+    <div
+      className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+        open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+      }`}
+      aria-hidden={!open}
+    >
+      <div className="min-h-0 overflow-hidden">
+        {open ? (
+          <CategoryTransactionList
+            transactions={transactions}
+            category={category}
+            onClear={onClear}
+          />
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -225,14 +258,21 @@ export default function TransactionCharts({
         ) : (
           <div className="space-y-2">
             {visibleCategories.map((item, index) => (
-              <CategoryRow
-                key={item.category}
-                category={item.category}
-                amount={item.amount}
-                color={PIE_COLORS[index % PIE_COLORS.length]}
-                isActive={activeCategory === item.category}
-                onClick={() => toggleCategory(item.category)}
-              />
+              <Fragment key={item.category}>
+                <CategoryRow
+                  category={item.category}
+                  amount={item.amount}
+                  color={PIE_COLORS[index % PIE_COLORS.length]}
+                  isActive={activeCategory === item.category}
+                  onClick={() => toggleCategory(item.category)}
+                />
+                <CategoryDrilldownPanel
+                  open={activeCategory === item.category}
+                  transactions={filteredTransactions}
+                  category={item.category}
+                  onClear={() => setSelectedCategory(null)}
+                />
+              </Fragment>
             ))}
 
             {hiddenCategoryCount > 0 ? (
@@ -249,19 +289,26 @@ export default function TransactionCharts({
                     {categoryData
                       .slice(DEFAULT_VISIBLE_CATEGORIES)
                       .map((item, index) => (
-                        <CategoryRow
-                          key={item.category}
-                          category={item.category}
-                          amount={item.amount}
-                          color={
-                            PIE_COLORS[
-                              (index + DEFAULT_VISIBLE_CATEGORIES) %
-                                PIE_COLORS.length
-                            ]
-                          }
-                          isActive={activeCategory === item.category}
-                          onClick={() => toggleCategory(item.category)}
-                        />
+                        <Fragment key={item.category}>
+                          <CategoryRow
+                            category={item.category}
+                            amount={item.amount}
+                            color={
+                              PIE_COLORS[
+                                (index + DEFAULT_VISIBLE_CATEGORIES) %
+                                  PIE_COLORS.length
+                              ]
+                            }
+                            isActive={activeCategory === item.category}
+                            onClick={() => toggleCategory(item.category)}
+                          />
+                          <CategoryDrilldownPanel
+                            open={activeCategory === item.category}
+                            transactions={filteredTransactions}
+                            category={item.category}
+                            onClear={() => setSelectedCategory(null)}
+                          />
+                        </Fragment>
                       ))}
                   </div>
                 </div>
@@ -278,25 +325,6 @@ export default function TransactionCharts({
                 {showAllCategories ? "Less" : `More ${hiddenCategoryCount}+`}
               </button>
             ) : null}
-
-            <div
-              className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
-                activeCategory
-                  ? "grid-rows-[1fr] opacity-100"
-                  : "grid-rows-[0fr] opacity-0"
-              }`}
-              aria-hidden={!activeCategory}
-            >
-              <div className="min-h-0 overflow-hidden">
-                {activeCategory ? (
-                  <CategoryTransactionList
-                    transactions={filteredTransactions}
-                    category={activeCategory}
-                    onClear={() => setSelectedCategory(null)}
-                  />
-                ) : null}
-              </div>
-            </div>
           </div>
         )}
       </ChartPanel>
