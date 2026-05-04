@@ -193,5 +193,3 @@ A task is complete when:
 ## Notes
 
 [Add project-specific notes, gotchas, or context here as you work]
-
-ClaudeMD-Template.txt
