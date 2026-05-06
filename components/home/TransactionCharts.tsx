@@ -117,14 +117,12 @@ interface CategoryDrilldownPanelProps {
   open: boolean;
   transactions: TransactionRecord[];
   category: string;
-  onClear: () => void;
 }
 
 function CategoryDrilldownPanel({
   open,
   transactions,
   category,
-  onClear,
 }: CategoryDrilldownPanelProps) {
   return (
     <div
@@ -138,7 +136,6 @@ function CategoryDrilldownPanel({
           <CategoryTransactionList
             transactions={transactions}
             category={category}
-            onClear={onClear}
           />
         ) : null}
       </div>
@@ -270,7 +267,6 @@ export default function TransactionCharts({
                   open={activeCategory === item.category}
                   transactions={filteredTransactions}
                   category={item.category}
-                  onClear={() => setSelectedCategory(null)}
                 />
               </Fragment>
             ))}
@@ -306,7 +302,6 @@ export default function TransactionCharts({
                             open={activeCategory === item.category}
                             transactions={filteredTransactions}
                             category={item.category}
-                            onClear={() => setSelectedCategory(null)}
                           />
                         </Fragment>
                       ))}

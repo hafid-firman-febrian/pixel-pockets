@@ -8,7 +8,6 @@ import type { TransactionRecord } from "@/lib/transactions";
 interface CategoryTransactionListProps {
   transactions: TransactionRecord[];
   category: string;
-  onClear: () => void;
 }
 
 const PAGE_SIZE = 5;
@@ -16,8 +15,15 @@ const PAGE_SIZE = 5;
 export default function CategoryTransactionList({
   transactions,
   category,
-  onClear,
 }: CategoryTransactionListProps) {
+  const [page, setPage] = useState(0);
+  const [prevCategory, setPrevCategory] = useState(category);
+
+  if (prevCategory !== category) {
+    setPrevCategory(category);
+    setPage(0);
+  }
+
   const filtered = useMemo(() => {
     return transactions
       .filter(
@@ -35,8 +41,6 @@ export default function CategoryTransactionList({
       });
   }, [transactions, category]);
 
-  const [page, setPage] = useState(0);
-
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
   const pageStart = safePage * PAGE_SIZE;
@@ -51,13 +55,6 @@ export default function CategoryTransactionList({
           </p>
           <h4 className="text-lg font-bold text-slate-900">{category}</h4>
         </div>
-        {/* <button
-          type="button"
-          onClick={onClear}
-          className="self-start border border-black bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.25em] text-slate-700 transition-colors hover:bg-slate-100 sm:self-auto"
-        >
-          Clear Filter
-        </button> */}
       </header>
 
       {filtered.length === 0 ? (
@@ -95,7 +92,7 @@ export default function CategoryTransactionList({
             <nav className="mt-3 flex items-center justify-between gap-3 border-t border-dashed border-slate-300 pt-3">
               <button
                 type="button"
-                onClick={() => setPage((current) => Math.max(0, current - 1))}
+                onClick={() => setPage(Math.max(0, safePage - 1))}
                 disabled={safePage === 0}
                 className="border border-black bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-900 transition-colors hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
               >
@@ -106,9 +103,7 @@ export default function CategoryTransactionList({
               </span>
               <button
                 type="button"
-                onClick={() =>
-                  setPage((current) => Math.min(totalPages - 1, current + 1))
-                }
+                onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
                 disabled={safePage >= totalPages - 1}
                 className="border border-black bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-900 transition-colors hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
               >
