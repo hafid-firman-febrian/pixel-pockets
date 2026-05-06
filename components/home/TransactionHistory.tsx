@@ -54,6 +54,8 @@ const FILTER_OPTIONS: { label: string; value: TransactionListFilter }[] = [
   { label: "All", value: "all" },
 ];
 
+const PAGE_SIZE = 10;
+
 const rowDateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   month: "short",
@@ -239,6 +241,8 @@ export default function TransactionHistory({
     filter: "week",
     offset: 0,
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(0);
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(
     null,
   );
@@ -251,8 +255,36 @@ export default function TransactionHistory({
     periodState,
   );
   const filteredTransactions = filteredResult.transactions;
-  const groupedTransactions = groupTransactionsByDay(filteredTransactions);
-  const totals = buildTransactionTotals(filteredTransactions);
+
+  const trimmedQuery = searchQuery.trim().toLowerCase();
+  const searchedTransactions = trimmedQuery
+    ? filteredTransactions.filter(
+        (transaction) =>
+          transaction.description.toLowerCase().includes(trimmedQuery) ||
+          transaction.category.toLowerCase().includes(trimmedQuery),
+      )
+    : filteredTransactions;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(searchedTransactions.length / PAGE_SIZE),
+  );
+
+  const resetKey = `${periodState.filter}|${periodState.offset}|${trimmedQuery}`;
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+  if (prevResetKey !== resetKey) {
+    setPrevResetKey(resetKey);
+    setPage(0);
+  }
+
+  const safePage = Math.min(page, totalPages - 1);
+  const pageStart = safePage * PAGE_SIZE;
+  const pageTransactions = searchedTransactions.slice(
+    pageStart,
+    pageStart + PAGE_SIZE,
+  );
+  const groupedTransactions = groupTransactionsByDay(pageTransactions);
+  const totals = buildTransactionTotals(searchedTransactions);
   const showPeriodNavigation = periodState.filter !== "all";
   const editingTransaction =
     optimisticTransactions.find(
@@ -340,11 +372,36 @@ export default function TransactionHistory({
           </div>
         </div>
 
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <label className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-500 sm:shrink-0">
+            /search
+          </label>
+          <div className="relative flex-1">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Description or category..."
+              className="w-full border border-black bg-white px-3 py-2 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-yellow-50 focus:outline-none"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 border border-black bg-white px-2 py-1 text-[10px] font-bold uppercase text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+        </div>
+
         <div className="mt-4 flex flex-col gap-2 text-xs uppercase tracking-[0.25em] text-slate-500 md:flex-row md:items-center md:justify-between">
           <span>
             [ active table filter: {getTransactionListFilterLabel(periodState.filter)} ]
           </span>
-          <span>[ {filteredTransactions.length} transactions found ]</span>
+          <span>[ {searchedTransactions.length} transactions found ]</span>
         </div>
 
         {showPeriodNavigation ? (
@@ -370,7 +427,9 @@ export default function TransactionHistory({
         <div className="mt-6 space-y-6">
           {groupedTransactions.length === 0 ? (
             <div className="flex min-h-48 items-center justify-center border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm leading-6 text-slate-500">
-              No transactions found for this period.
+              {trimmedQuery
+                ? `No transactions match "${searchQuery.trim()}" in this period.`
+                : "No transactions found for this period."}
             </div>
           ) : (
             groupedTransactions.map((group) => (
@@ -457,6 +516,30 @@ export default function TransactionHistory({
             ))
           )}
         </div>
+
+        {totalPages > 1 ? (
+          <nav className="mt-6 flex items-center justify-between gap-3 border-t border-dashed border-slate-300 pt-4">
+            <button
+              type="button"
+              onClick={() => setPage(Math.max(0, safePage - 1))}
+              disabled={safePage === 0}
+              className="border border-black bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-900 transition-colors hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
+            >
+              ← Prev
+            </button>
+            <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500">
+              Page {safePage + 1} / {totalPages} · {searchedTransactions.length} items
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+              disabled={safePage >= totalPages - 1}
+              className="border border-black bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-900 transition-colors hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
+            >
+              Next →
+            </button>
+          </nav>
+        ) : null}
 
         <div className="mt-6 border-t border-dashed border-slate-300 pt-6">
           <div className="grid gap-4 md:grid-cols-2">
